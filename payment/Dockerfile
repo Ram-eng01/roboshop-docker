@@ -17,5 +17,5 @@ RUN addgroup -S roboshop && adduser -S roboshop -G roboshop
 USER roboshop
 COPY --from=builder /install /usr/local
 COPY --chown=roboshop:roboshop payment.ini .
-COPY --chown=roboshop:roboshop *.py .
+COPY --chown=roboshop:roboshop *.py /opt/server
 CMD ["uwsgi","--ini","payment.ini"]
