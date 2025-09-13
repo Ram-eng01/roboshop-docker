@@ -4,7 +4,7 @@ COPY pom.xml .
 COPY src /opt/server/src
 RUN mvn clean package
 
-FROM ecipse-temurine:17-jre-alpine
+FROM openjdk:17-ea-jdk-alpine3.14
 EXPOSE 8080
 WORKDIR /opt/server
 RUN addgroup -S roboshop && adduser -S roboshop -G roboshop
