@@ -1,1 +1,94 @@
+version: "3"
+services:
+  mongodb:
+    container_name: mongodb
+    build: ./mongodb
+    volumes:
+    - mongodb:/data/db
 
+  catalogue:
+    container_name: catalogue
+    build: ./catalogue
+    depends_on:
+    - mongodb
+
+  redis:
+    image: redis:7.0
+    container_name: redis
+    volumes:
+    - redis:/data
+
+  user:
+    container_name: user
+    build: ./user
+    depends_on:
+    - mongodb
+    - redis
+
+  cart:
+    container_name: cart
+    build: ./cart
+    depends_on:
+      - catalogue
+      - redis
+  mysql:
+    container_name: mysql
+    build: ./mysql
+    volumes:
+    - mysql:/var/lib/mysql
+    
+  shipping:
+    container_name: shipping
+    build: ./shipping
+    depends_on:
+      - mysql
+      - cart
+
+  rabbitmq:
+    image: rabbitmq:3
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: roboshop
+      RABBITMQ_DEFAULT_PASS: roboshop123
+    volumes:
+    - rabbitmq:/var/lib/rabbitmq
+
+  payment:
+    container_name: payment
+    build: ./payment
+    environment:
+      CART_HOST: cart
+      CART_PORT: 8080
+      USER_HOST: user
+      USER_PORT: 8080
+      AMQP_HOST: rabbitmq
+      AMQP_USER: roboshop
+      AMQP_PASS: roboshop123
+    depends_on:
+    - rabbitmq
+    - cart
+    - user
+
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    ports:
+    - "80:80"
+    depends_on:
+    - catalogue
+    - user
+    - cart
+    - shipping
+    - payment
+    
+
+networks:
+  default:
+    driver: bridge
+    name: roboshop
+
+volumes:
+  mongodb:
+  redis:
+  mysql:
+  rabbitmq:
